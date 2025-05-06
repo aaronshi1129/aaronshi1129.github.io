@@ -1,0 +1,1024 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary: #5D5FEF;
+            --primary-light: #7879F1;
+            --primary-dark: #4A4AD4;
+            --secondary: #F5F5FF;
+            --text: #333333;
+            --text-light: #666666;
+            --background: #F9F9FF;
+            --white: #FFFFFF;
+            --border: #E0E0FF;
+            --success: #4CAF50;
+            --error: #F44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            flex: 1;
+            width: 100%;
+        }
+        
+        .app-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .app-header h1 {
+            color: var(--primary);
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+        }
+        
+        .app-header p {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+        
+        .app-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            justify-content: center;
+            align-items: stretch;
+        }
+        
+        .settings-panel {
+            flex: 1;
+            min-width: 350px;
+            max-width: 600px;
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(93, 95, 239, 0.1);
+        }
+        
+        .preview-panel {
+            flex: 1;
+            min-width: 350px;
+            max-width: 600px;
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(93, 95, 239, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .form-group {
+            margin-bottom: 24px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 1.05rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(93, 95, 239, 0.2);
+        }
+        
+        .color-picker {
+            display: flex;
+            align-items: center;
+        }
+        
+        .color-picker input[type="color"] {
+            width: 60px;
+            height: 45px;
+            border: none;
+            border-radius: 10px;
+            background: none;
+            cursor: pointer;
+        }
+        
+        .color-picker input[type="text"] {
+            flex: 1;
+            margin-left: 15px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-light);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--border);
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+        
+        .qr-preview {
+            width: 100%;
+            max-width: 350px;
+            height: 350px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .qr-preview canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .qr-container {
+            position: relative;
+            width: 100%;
+            max-width: 350px;
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .qr-title {
+            text-align: center;
+            margin-top: 15px;
+            font-weight: 600;
+            color: var(--text);
+            font-size: 1.2rem;
+        }
+        
+        .qr-url {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: var(--text-light);
+            word-break: break-all;
+            max-width: 100%;
+            padding: 0 10px;
+        }
+        
+        .download-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .download-options .btn {
+            padding: 12px 20px;
+            min-width: 100px;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            padding: 16px 28px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s, transform 0.3s;
+            z-index: 1000;
+            font-size: 1.05rem;
+        }
+        
+        .notification.success {
+            background-color: var(--success);
+        }
+        
+        .notification.error {
+            background-color: var(--error);
+        }
+        
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .center-option {
+            margin-top: 18px;
+            display: none;
+        }
+        
+        .center-option.active {
+            display: block;
+        }
+        
+        .tab-container {
+            margin-bottom: 18px;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .tab-btn {
+            padding: 12px 18px;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--text-light);
+            transition: all 0.3s;
+        }
+        
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .tab-content {
+            padding-top: 18px;
+        }
+        
+        .tab-panel {
+            display: none;
+        }
+        
+        .tab-panel.active {
+            display: block;
+        }
+        
+        .file-input-container {
+            position: relative;
+            width: 100%;
+            height: 120px;
+            border: 2px dashed var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        .file-input-container:hover {
+            border-color: var(--primary-light);
+        }
+        
+        .file-input-container input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        
+        .file-input-label {
+            text-align: center;
+            color: var(--text-light);
+        }
+        
+        .file-preview {
+            max-width: 100%;
+            max-height: 100px;
+            display: none;
+        }
+        
+        .file-preview.show {
+            display: block;
+        }
+        
+        .save-settings {
+            margin-top: 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .save-settings label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.05rem;
+        }
+        
+        .save-settings input[type="checkbox"] {
+            margin-right: 10px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--primary);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 25px 0;
+            margin-top: 50px;
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: color 0.3s;
+        }
+        
+        .footer a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .footer img {
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+        
+        /* Responsive styles */
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 1600px;
+            }
+            
+            .app-content {
+                gap: 60px;
+            }
+            
+            .settings-panel, .preview-panel {
+                max-width: 700px;
+                padding: 40px;
+            }
+            
+            .qr-preview {
+                max-width: 400px;
+                height: 400px;
+            }
+            
+            .qr-container {
+                max-width: 400px;
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .app-content {
+                gap: 30px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .app-header h1 {
+                font-size: 2.4rem;
+            }
+            
+            .app-header p {
+                font-size: 1.1rem;
+            }
+            
+            .settings-panel, .preview-panel {
+                padding: 25px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .app-content {
+                flex-direction: column;
+            }
+            
+            .settings-panel, .preview-panel {
+                max-width: 100%;
+                min-width: 100%;
+            }
+            
+            .qr-preview {
+                max-width: 300px;
+                height: 300px;
+            }
+            
+            .qr-container {
+                max-width: 300px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .app-header h1 {
+                font-size: 2rem;
+            }
+            
+            .app-header p {
+                font-size: 1rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .form-control {
+                padding: 12px 14px;
+            }
+            
+            .settings-panel, .preview-panel {
+                padding: 20px;
+                border-radius: 12px;
+            }
+            
+            .qr-preview {
+                max-width: 250px;
+                height: 250px;
+            }
+            
+            .qr-container {
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="app-header">
+            <h1>QR Code Generator</h1>
+            <p>Create customized QR codes with logos and colors</p>
+        </div>
+        
+        <div class="app-content">
+            <div class="settings-panel">
+                <div class="form-group">
+                    <label for="qr-url">URL or Text to Encode</label>
+                    <input type="text" id="qr-url" class="form-control" placeholder="Enter URL or text" value="https://example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="qr-title">QR Code Title (Optional)</label>
+                    <input type="text" id="qr-title" class="form-control" placeholder="Enter title">
+                </div>
+                
+                <div class="form-group">
+                    <label>Center Logo Settings</label>
+                    <select id="center-type" class="form-control">
+                        <option value="none">No Center Logo</option>
+                        <option value="text">Text in Center</option>
+                        <option value="upload">Upload Image</option>
+                        <option value="url">Image URL</option>
+                    </select>
+                    
+                    <div id="center-text" class="center-option">
+                        <div class="form-group">
+                            <label for="center-text-input">Center Text</label>
+                            <input type="text" id="center-text-input" class="form-control" placeholder="Enter text for center">
+                        </div>
+                    </div>
+                    
+                    <div id="center-upload" class="center-option">
+                        <div class="form-group">
+                            <label>Upload Logo Image</label>
+                            <div class="file-input-container">
+                                <input type="file" id="center-image-upload" accept="image/*">
+                                <div class="file-input-label">
+                                    <span>Click or drag to upload image</span>
+                                    <img id="upload-preview" class="file-preview" src="" alt="Preview">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="center-url" class="center-option">
+                        <div class="form-group">
+                            <label for="center-image-url">Image URL</label>
+                            <input type="text" id="center-image-url" class="form-control" placeholder="Enter image URL">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="qr-foreground">QR Code Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="qr-foreground" value="#000000">
+                        <input type="text" id="qr-foreground-text" class="form-control" value="#000000">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="qr-background">Background Color</label>
+                    <div class="color-picker">
+                        <input type="color" id="qr-background" value="#FFFFFF">
+                        <input type="text" id="qr-background-text" class="form-control" value="#FFFFFF">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button id="generate-btn" class="btn">Generate QR Code</button>
+                    <button id="reset-btn" class="btn btn-secondary">Reset</button>
+                </div>
+                
+                <div class="save-settings">
+                    <label>
+                        <input type="checkbox" id="save-settings">
+                        Save settings for next time
+                    </label>
+                </div>
+            </div>
+            
+            <div class="preview-panel">
+                <div class="qr-container">
+                    <div id="qr-preview" class="qr-preview"></div>
+                    <div id="qr-title-display" class="qr-title"></div>
+                    <div id="qr-url-display" class="qr-url"></div>
+                </div>
+                
+                <div class="download-options">
+                    <button id="download-png" class="btn">PNG</button>
+                    <button id="download-jpg" class="btn">JPG</button>
+                </div>
+                
+                <div class="form-group" style="margin-top: 25px; width: 100%;">
+                    <label>
+                        <input type="checkbox" id="include-url" checked>
+                        Include URL in downloaded image
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="footer">
+        <a href="https://www.aaronshi.cc" target="_blank" rel="noopener noreferrer">
+            Created by Aaron Shi <img src="https://alittlemoreenglish.weebly.com/uploads/2/6/6/3/26638990/favicon-32x32_orig.png" alt="Aaron Shi" width="15" height="15">
+        </a>
+    </footer>
+    
+    <div id="notification" class="notification"></div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const qrUrlInput = document.getElementById('qr-url');
+            const qrTitleInput = document.getElementById('qr-title');
+            const centerTypeSelect = document.getElementById('center-type');
+            const centerTextInput = document.getElementById('center-text-input');
+            const centerImageUpload = document.getElementById('center-image-upload');
+            const uploadPreview = document.getElementById('upload-preview');
+            const centerImageUrl = document.getElementById('center-image-url');
+            const qrForegroundInput = document.getElementById('qr-foreground');
+            const qrForegroundText = document.getElementById('qr-foreground-text');
+            const qrBackgroundInput = document.getElementById('qr-background');
+            const qrBackgroundText = document.getElementById('qr-background-text');
+            const generateBtn = document.getElementById('generate-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const qrPreview = document.getElementById('qr-preview');
+            const qrTitleDisplay = document.getElementById('qr-title-display');
+            const qrUrlDisplay = document.getElementById('qr-url-display');
+            const downloadPng = document.getElementById('download-png');
+            const downloadJpg = document.getElementById('download-jpg');
+            const includeUrl = document.getElementById('include-url');
+            const saveSettings = document.getElementById('save-settings');
+            const notification = document.getElementById('notification');
+            
+            // Center option elements
+            const centerText = document.getElementById('center-text');
+            const centerUpload = document.getElementById('center-upload');
+            const centerUrl = document.getElementById('center-url');
+            
+            // Variables
+            let uploadedImage = null;
+            let urlImage = null;
+            let qrCanvas = null;
+            
+            // Load saved settings
+            loadSettings();
+            
+            // Event Listeners
+            centerTypeSelect.addEventListener('change', toggleCenterOptions);
+            qrForegroundInput.addEventListener('input', updateColorText);
+            qrBackgroundInput.addEventListener('input', updateColorText);
+            qrForegroundText.addEventListener('input', updateColorPicker);
+            qrBackgroundText.addEventListener('input', updateColorPicker);
+            generateBtn.addEventListener('click', generateQRCode);
+            resetBtn.addEventListener('click', resetForm);
+            centerImageUpload.addEventListener('change', handleImageUpload);
+            downloadPng.addEventListener('click', () => downloadQR('png'));
+            downloadJpg.addEventListener('click', () => downloadQR('jpg'));
+            saveSettings.addEventListener('change', saveUserSettings);
+            
+            // Initialize
+            toggleCenterOptions();
+            
+            // Functions
+            function toggleCenterOptions() {
+                const selectedOption = centerTypeSelect.value;
+                
+                // Hide all options first
+                centerText.classList.remove('active');
+                centerUpload.classList.remove('active');
+                centerUrl.classList.remove('active');
+                
+                // Show selected option
+                if (selectedOption === 'text') {
+                    centerText.classList.add('active');
+                } else if (selectedOption === 'upload') {
+                    centerUpload.classList.add('active');
+                } else if (selectedOption === 'url') {
+                    centerUrl.classList.add('active');
+                }
+            }
+            
+            function updateColorText(e) {
+                const targetId = e.target.id;
+                if (targetId === 'qr-foreground') {
+                    qrForegroundText.value = e.target.value;
+                } else if (targetId === 'qr-background') {
+                    qrBackgroundText.value = e.target.value;
+                }
+            }
+            
+            function updateColorPicker(e) {
+                const targetId = e.target.id;
+                if (targetId === 'qr-foreground-text') {
+                    try {
+                        qrForegroundInput.value = e.target.value;
+                    } catch (error) {
+                        // Invalid color format
+                    }
+                } else if (targetId === 'qr-background-text') {
+                    try {
+                        qrBackgroundInput.value = e.target.value;
+                    } catch (error) {
+                        // Invalid color format
+                    }
+                }
+            }
+            
+            function handleImageUpload(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        uploadPreview.src = event.target.result;
+                        uploadPreview.classList.add('show');
+                        uploadedImage = new Image();
+                        uploadedImage.src = event.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            function generateQRCode() {
+                const url = qrUrlInput.value.trim();
+                if (!url) {
+                    showNotification('Please enter a URL or text to encode', 'error');
+                    return;
+                }
+                
+                // Clear previous QR code
+                qrPreview.innerHTML = '';
+                
+                // Get colors
+                const foregroundColor = qrForegroundInput.value;
+                const backgroundColor = qrBackgroundInput.value;
+                
+                // Generate QR code with options
+                const qrOptions = {
+                    errorCorrectionLevel: 'H',
+                    margin: 1,
+                    color: {
+                        dark: foregroundColor,
+                        light: backgroundColor
+                    },
+                    width: 350
+                };
+                
+                // Create a canvas for the QR code
+                qrCanvas = document.createElement('canvas');
+                qrPreview.appendChild(qrCanvas);
+                
+                // Generate QR code on canvas
+                QRCode.toCanvas(qrCanvas, url, qrOptions, function(error) {
+                    if (error) {
+                        console.error('Error generating QR code:', error);
+                        showNotification('Error generating QR code', 'error');
+                        return;
+                    }
+                    
+                    // Add center element if selected
+                    const centerType = centerTypeSelect.value;
+                    if (centerType !== 'none') {
+                        const ctx = qrCanvas.getContext('2d');
+                        const centerSize = qrCanvas.width * 0.2; // 20% of QR code size
+                        const centerX = qrCanvas.width / 2 - centerSize / 2;
+                        const centerY = qrCanvas.height / 2 - centerSize / 2;
+                        
+                        // Add white background for center element
+                        ctx.fillStyle = backgroundColor;
+                        ctx.fillRect(centerX - 5, centerY - 5, centerSize + 10, centerSize + 10);
+                        
+                        if (centerType === 'text') {
+                            const text = centerTextInput.value.trim();
+                            if (text) {
+                                // Calculate font size based on text length
+                                const fontSize = Math.min(centerSize / text.length * 1.5, centerSize / 2);
+                                ctx.font = `bold ${fontSize}px Inter`;
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillStyle = foregroundColor;
+                                ctx.fillText(text, qrCanvas.width / 2, qrCanvas.height / 2);
+                            }
+                        } else if (centerType === 'upload' && uploadedImage) {
+                            // Wait for image to load
+                            if (uploadedImage.complete) {
+                                ctx.drawImage(uploadedImage, centerX, centerY, centerSize, centerSize);
+                            } else {
+                                uploadedImage.onload = function() {
+                                    ctx.drawImage(uploadedImage, centerX, centerY, centerSize, centerSize);
+                                };
+                            }
+                        } else if (centerType === 'url') {
+                            const imageUrl = centerImageUrl.value.trim();
+                            if (imageUrl) {
+                                // Load image from URL
+                                urlImage = new Image();
+                                urlImage.crossOrigin = 'Anonymous';
+                                urlImage.onload = function() {
+                                    ctx.drawImage(urlImage, centerX, centerY, centerSize, centerSize);
+                                };
+                                urlImage.onerror = function() {
+                                    showNotification('Failed to load image from URL', 'error');
+                                };
+                                urlImage.src = imageUrl;
+                            }
+                        }
+                    }
+                    
+                    // Update title and URL display
+                    const title = qrTitleInput.value.trim();
+                    qrTitleDisplay.textContent = title;
+                    
+                    if (includeUrl.checked) {
+                        qrUrlDisplay.textContent = url;
+                    } else {
+                        qrUrlDisplay.textContent = '';
+                    }
+                    
+                    showNotification('QR Code generated successfully!', 'success');
+                    
+                    // Save settings if enabled
+                    if (saveSettings.checked) {
+                        saveUserSettings();
+                    }
+                });
+            }
+            
+            function downloadQR(format) {
+                if (!qrCanvas) {
+                    showNotification('Please generate a QR code first', 'error');
+                    return;
+                }
+                
+                const title = qrTitleInput.value.trim() || 'qrcode';
+                const url = qrUrlInput.value.trim();
+                
+                // Create a temporary canvas for the download
+                const tempCanvas = document.createElement('canvas');
+                const padding = 30;
+                let extraHeight = 0;
+                
+                // Calculate extra height for title and URL if needed
+                if (qrTitleInput.value.trim()) {
+                    extraHeight += 30;
+                }
+                
+                if (includeUrl.checked) {
+                    extraHeight += 20;
+                }
+                
+                // Set canvas dimensions
+                tempCanvas.width = qrCanvas.width + (padding * 2);
+                tempCanvas.height = qrCanvas.height + (padding * 2) + extraHeight;
+                
+                const ctx = tempCanvas.getContext('2d');
+                
+                // Fill background
+                ctx.fillStyle = qrBackgroundInput.value;
+                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw QR code
+                ctx.drawImage(qrCanvas, padding, padding);
+                
+                let currentY = qrCanvas.height + padding + 10;
+                
+                // Add title if present
+                if (qrTitleInput.value.trim()) {
+                    ctx.font = 'bold 16px Inter';
+                    ctx.fillStyle = qrForegroundInput.value;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(qrTitleInput.value.trim(), tempCanvas.width / 2, currentY);
+                    currentY += 25;
+                }
+                
+                // Add URL if checkbox is checked
+                if (includeUrl.checked) {
+                    ctx.font = '12px Inter';
+                    ctx.fillStyle = qrForegroundInput.value;
+                    ctx.textAlign = 'center';
+                    
+                    // Handle long URLs by truncating or wrapping
+                    const maxWidth = tempCanvas.width - (padding * 2);
+                    if (ctx.measureText(url).width > maxWidth) {
+                        // Simple truncation with ellipsis
+                        let truncatedUrl = url;
+                        while (ctx.measureText(truncatedUrl + '...').width > maxWidth && truncatedUrl.length > 0) {
+                            truncatedUrl = truncatedUrl.slice(0, -1);
+                        }
+                        ctx.fillText(truncatedUrl + '...', tempCanvas.width / 2, currentY);
+                    } else {
+                        ctx.fillText(url, tempCanvas.width / 2, currentY);
+                    }
+                }
+                
+                // Convert canvas to blob and download
+                tempCanvas.toBlob(function(blob) {
+                    saveAs(blob, `${title}.${format}`);
+                    showNotification(`QR Code downloaded as ${format.toUpperCase()}`, 'success');
+                }, format === 'png' ? 'image/png' : 'image/jpeg', format === 'jpg' ? 0.9 : 1);
+            }
+            
+            function resetForm() {
+                qrUrlInput.value = 'https://example.com';
+                qrTitleInput.value = '';
+                centerTypeSelect.value = 'none';
+                centerTextInput.value = '';
+                centerImageUpload.value = '';
+                uploadPreview.src = '';
+                uploadPreview.classList.remove('show');
+                centerImageUrl.value = '';
+                qrForegroundInput.value = '#000000';
+                qrForegroundText.value = '#000000';
+                qrBackgroundInput.value = '#FFFFFF';
+                qrBackgroundText.value = '#FFFFFF';
+                includeUrl.checked = true;
+                
+                // Clear QR code preview
+                qrPreview.innerHTML = '';
+                qrTitleDisplay.textContent = '';
+                qrUrlDisplay.textContent = '';
+                qrCanvas = null;
+                
+                // Reset images
+                uploadedImage = null;
+                urlImage = null;
+                
+                // Update center options
+                toggleCenterOptions();
+                
+                // Clear local storage if save settings is checked
+                if (saveSettings.checked) {
+                    localStorage.removeItem('qrGeneratorSettings');
+                    saveSettings.checked = false;
+                }
+                
+                showNotification('Form reset successfully', 'success');
+            }
+            
+            function showNotification(message, type) {
+                notification.textContent = message;
+                notification.className = 'notification ' + type;
+                notification.classList.add('show');
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            function saveUserSettings() {
+                if (!saveSettings.checked) {
+                    localStorage.removeItem('qrGeneratorSettings');
+                    return;
+                }
+                
+                const settings = {
+                    url: qrUrlInput.value,
+                    title: qrTitleInput.value,
+                    centerType: centerTypeSelect.value,
+                    centerText: centerTextInput.value,
+                    centerImageUrl: centerImageUrl.value,
+                    foregroundColor: qrForegroundInput.value,
+                    backgroundColor: qrBackgroundInput.value,
+                    includeUrl: includeUrl.checked
+                };
+                
+                localStorage.setItem('qrGeneratorSettings', JSON.stringify(settings));
+            }
+            
+            function loadSettings() {
+                const savedSettings = localStorage.getItem('qrGeneratorSettings');
+                if (savedSettings) {
+                    try {
+                        const settings = JSON.parse(savedSettings);
+                        
+                        qrUrlInput.value = settings.url || '';
+                        qrTitleInput.value = settings.title || '';
+                        centerTypeSelect.value = settings.centerType || 'none';
+                        centerTextInput.value = settings.centerText || '';
+                        centerImageUrl.value = settings.centerImageUrl || '';
+                        qrForegroundInput.value = settings.foregroundColor || '#000000';
+                        qrForegroundText.value = settings.foregroundColor || '#000000';
+                        qrBackgroundInput.value = settings.backgroundColor || '#FFFFFF';
+                        qrBackgroundText.value = settings.backgroundColor || '#FFFFFF';
+                        includeUrl.checked = settings.includeUrl !== undefined ? settings.includeUrl : true;
+                        saveSettings.checked = true;
+                        
+                        // Update center options
+                        toggleCenterOptions();
+                        
+                        // If there's a saved image URL, try to load it
+                        if (settings.centerType === 'url' && settings.centerImageUrl) {
+                            urlImage = new Image();
+                            urlImage.crossOrigin = 'Anonymous';
+                            urlImage.src = settings.centerImageUrl;
+                        }
+                    } catch (error) {
+                        console.error('Error loading saved settings:', error);
+                    }
+                }
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93ae0647e105845e',t:'MTc0NjQyNDkwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
