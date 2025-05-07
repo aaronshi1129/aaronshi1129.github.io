@@ -1,0 +1,4 @@
+                                <div class="text-gray-800 font-bold">
+                                    <span class="line-through text-gray-400 mr-2">$129.99</span>
+                                    $89.99
+                                </div>
