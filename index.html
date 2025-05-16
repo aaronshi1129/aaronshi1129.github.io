@@ -130,7 +130,7 @@
             </div>
         </div>
         <!-- Mobile menu -->
-        <div id="mobile-menu" class="hidden md:hidden absolute top-16 left-0 right-0 bg-white shadow-lg p-4">
+        <div id="mobile-menu" class="hidden absolute top-16 left-0 right-0 bg-white shadow-lg p-4">
             <div class="flex flex-col space-y-4">
                 <a href="#home" class="text-gray-700 hover:text-pink-500 transition">Home</a>
                 <a href="#features" class="text-gray-700 hover:text-pink-500 transition">Features</a>
@@ -1406,6 +1406,22 @@
     </footer>
 
     <script>
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+        
+            if (menuToggle && mobileMenu) {
+                // Mobile menu toggle
+                menuToggle.addEventListener('click', function () {
+                    mobileMenu.classList.toggle('hidden');
+                });
+        
+                // Close mobile menu when clicking a link
+                document.querySelectorAll('#mobile-menu a').forEach(link => {
+                    link.addEventListener('click', function () {
+                        mobileMenu.classList.add('hidden');
+                    });
+                });
+            }
         // Mobile menu toggle
         document.getElementById('menu-toggle').addEventListener('click', function() {
             const mobileMenu = document.getElementById('mobile-menu');
@@ -1439,31 +1455,23 @@
             });
         });
 
-        // 等待 DOM 完全加載
         document.addEventListener('DOMContentLoaded', function() {
-            // 獲取所有過濾按鈕和產品卡片
             const filterButtons = document.querySelectorAll('.product-filter-btn');
             const productCards = document.querySelectorAll('.product-card');
             
-            // 為每個過濾按鈕添加點擊事件監聽器
             filterButtons.forEach(button => {
                 button.addEventListener('click', function() {
-                    // 獲取過濾類別
                     const filterValue = this.getAttribute('data-filter');
                     
-                    // 移除所有按鈕的活躍狀態
                     filterButtons.forEach(btn => {
                         btn.classList.remove('bg-pink-500', 'text-white');
                         btn.classList.add('bg-white', 'text-gray-700', 'border', 'border-gray-200', 'hover:bg-gray-50');
                     });
                     
-                    // 添加當前按鈕的活躍狀態
                     this.classList.remove('bg-white', 'text-gray-700', 'border', 'border-gray-200', 'hover:bg-gray-50');
                     this.classList.add('bg-pink-500', 'text-white');
                     
-                    // 過濾產品卡片
                     productCards.forEach(card => {
-                        // 如果選擇「全部」或卡片包含選定的類別，則顯示
                         if (filterValue === 'all' || card.getAttribute('data-category').includes(filterValue)) {
                             card.style.display = 'block';
                         } else {
@@ -1473,20 +1481,16 @@
                 });
             });
             
-            // 模擬點擊「全部產品」按鈕以設置初始狀態
             filterButtons[0].click();
             
-            // 處理「載入更多產品」按鈕
             const loadMoreBtn = document.getElementById('load-more');
             if (loadMoreBtn) {
                 loadMoreBtn.addEventListener('click', function() {
-                    // 這裡可以添加載入更多產品的邏輯
-                    // 現在只是簡單地顯示一個提示
                     alert('更多產品即將推出！');
                 });
             }
             
-            // 處理移動端菜單切換
+
             const menuToggle = document.getElementById('menu-toggle');
             const mobileMenu = document.getElementById('mobile-menu');
             
